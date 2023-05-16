@@ -55,8 +55,79 @@ def calculate_points(receipt):
         app.logger.debug("rule7 %d", points)
     return points
 
+def validate(request):
+    #valid json
+    try:
+       receipt = request.json 
+    except Exception as e:
+        app.logger.debug("request %s not valid json", request, e)
+        return False
+    # validate required properties
+    for field in ["retailer", "purchaseDate", "purchaseTime", "items", "total"]:
+        if field not in receipt:
+            app.logger.debug("field %s not in receipt", field)
+            return False
+    # validate the property' types
+    if type(receipt["retailer"]) != str or not bool(re.match("^\\S+$", receipt["retailer"])):
+        app.logger.debug("retailer %s not valid", receipt["retailer"])
+        return False
+    if type(receipt["purchaseDate"]) != str:
+        app.logger.debug("purchaseDate %s not valid str", receipt["purchaseDate"])
+        return False
+    else: 
+        try:
+            datetime.strptime(receipt["purchaseDate"], "%Y-%m-%d")
+        except Exception:
+            app.logger.debug("purchaseDate %s not valid", receipt["purchaseDate"])
+            return False
+    if type(receipt["purchaseTime"]) != str: 
+        app.logger.debug("purchaseTime %s not valid str", receipt["purchaseTime"])
+        return False
+    else:
+        try:
+            datetime.strptime(receipt["purchaseTime"], "%H:%M")
+        except Exception:
+            app.logger.debug("purchaseTime %s not valid", receipt["purchaseTime"])
+            return False
+    if type(receipt["total"]) != str or not bool(re.match("^\\d+\\.\\d{2}$", receipt["total"])):
+        app.logger.debug("total %s not valid", receipt["total"])
+        return False
+    # validate item
+    items = receipt["items"]
+    if len(items) < 1:
+        app.logger.debug("items %s <1", items)
+        return False
+    else:
+        try:
+            item_itr = iter(items)
+            while True:
+                try:
+                    item = next(item_itr)
+                    for field in ["shortDescription", "price"]:
+                        if field not in item:
+                            app.logger.debug("field %s not in item", field)
+                            return False
+                    if type(item) != dict:
+                        app.logger.debug("item %s not valid dict", item)
+                        return False
+                    if type(item["shortDescription"]) != str or not bool(re.match("^[\\w\\s\\-]+$", item["shortDescription"])):
+                        app.logger.debug("shortDescription %s not valid", item["shortDescription"])
+                        return False
+                    if type(item["price"]) != str or not bool(re.match("^\\d+\\.\\d{2}$", item["price"])):
+                        app.logger.debug("price %s not valid", item["price"])
+                        return False
+                except StopIteration:
+                    break
+        except Exception as e:
+            app.logger.debug("items %s not valid", items, e)
+            return False
+    return True
+            
+
 @app.route('/receipts/process', methods=['POST'])
 def process_receipt():
+    if not validate(request):
+        return jsonify({"error": "The receipt is invalid"}), 400
     receipt = request.json
     receipt_id = str(uuid.uuid4())
     points = calculate_points(receipt)

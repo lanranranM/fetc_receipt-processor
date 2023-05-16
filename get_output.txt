@@ -10,3 +10,9 @@
 {
   "error": "No receipt found for that id"
 }
+{
+  "points": 15
+}
+{
+  "error": "No receipt found for that id"
+}

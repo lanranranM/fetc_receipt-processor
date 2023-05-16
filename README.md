@@ -39,3 +39,8 @@ curl --header "Content-Type: application/json" \
   ```
   { "id": "7fb1377b-b223-49d9-a31a-5a02701dd310" }
   ```
+  - Test Get
+  ```
+  curl http://localhost:5000/receipts/{id}/points > get_output.txt
+
+  ```

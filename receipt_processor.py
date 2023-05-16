@@ -56,7 +56,18 @@ def calculate_points(receipt):
     return points
 
 def validate(request):
-    #valid json
+    '''
+    Validate the request matched the api.yml spec.
+    1. Validate the request is valid json.
+    2. Validate the required properties are present.
+    3. Validate the property types.
+    4. Validate the items are valid.
+    Args:
+        request (flask.request): The request object
+    Returns:
+        bool: True if the request is valid, False otherwise
+    '''
+    #validate json
     try:
        receipt = request.json 
     except Exception as e:
@@ -126,6 +137,14 @@ def validate(request):
 
 @app.route('/receipts/process', methods=['POST'])
 def process_receipt():
+    '''
+    This method handles POST /receipts/process endpoint and return the receipt id.
+    This method validates the request and calculates the points as well.
+    Args:
+        None
+    Returns:
+        flask.Response: The response object is a json containing the receipt id or error messages
+    '''
     if not validate(request):
         return jsonify({"error": "The receipt is invalid"}), 400
     receipt = request.json
@@ -136,10 +155,18 @@ def process_receipt():
 
 @app.route('/receipts/<id>/points', methods=['GET'])
 def get_points(id):
+    '''
+    This method handles GET /receipts/<id>/points endpoint and return the points for the receipt id
+    Args:
+        id (str): The receipt id
+    Returns:
+        flask.Response: The response object is a json containing the points or error messages 
+    '''
     for receipt in receipts:
         if receipt["id"] == id:
             return jsonify({"points": receipt["points"]}), 200
     return jsonify({"error": "No receipt found for that id"}), 404
 
 if __name__ == '__main__':
+    # start the server on port 5000
     app.run(debug=True, host='0.0.0.0', port=5000)

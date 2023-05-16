@@ -68,7 +68,7 @@ def get_points(id):
     for receipt in receipts:
         if receipt["id"] == id:
             return jsonify({"points": receipt["points"]}), 200
-    return jsonify({"error": "Receipt not found"}), 404
+    return jsonify({"error": "No receipt found for that id"}), 404
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

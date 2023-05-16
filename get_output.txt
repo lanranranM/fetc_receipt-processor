@@ -7,3 +7,6 @@
 {
   "points": 28
 }
+{
+  "error": "No receipt found for that id"
+}

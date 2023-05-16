@@ -16,7 +16,7 @@ docker run -p 5000:5000 receipt-processor
 
 ## Testing  
 For simplicity, I use ```curl``` command line tool to test the API.   
-Keep the container with webserver runing, and in a new terminal session: 
+Keep the container with webserver running, and in a new terminal session: 
 - Test Post  
 
 Valid case:  
@@ -84,7 +84,6 @@ with status code 400
   Valid: case:
   ```
   curl http://localhost:5000/receipts/{id}/points >> get_output.txt
-
   ```
   Expected output:  
   ```

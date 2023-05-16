@@ -1,6 +1,6 @@
 # fetch-receipt-processor
 ## Introduction
-The recipt processor API has GET and POST methods. See [detials here](https://github.com/fetch-rewards/receipt-processor-challenge) or api.yml in the directory.
+The recipt processor API has GET and POST methods. See [details here](https://github.com/fetch-rewards/receipt-processor-challenge) or api.yml in the directory.
 
 ## How to start
 The API depends on Python>=3.8 and Flask >=2.3.2.  

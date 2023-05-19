@@ -49,7 +49,22 @@ class ReceiptProcessorTestCases(unittest.TestCase):
         self.assertEqual(response.get_json().get('error', None), "The receipt is invalid")
 
     def test_post_invalid_rule2(self):
-        response = self.client().post('/receipts/process', json={"invalid_field": "value"})
+        '''
+        Test POST /receipts/process endpoint with invalid payload (missing required property total).
+        '''
+        invalid_payload = {
+            "retailer": "Target",
+            "purchaseDate": "2022-01-01",
+            "purchaseTime": "13:01",
+            "items": [
+                {
+                    "shortDescription": "Mountain Dew 12PK",
+                    "price": "6.49"
+                }
+            ],
+        }
+        
+        response = self.client().post('/receipts/process', data=json.dumps(invalid_payload), content_type='application/json')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.get_json().get('error', None), "The receipt is invalid")
         
@@ -74,14 +89,14 @@ class ReceiptProcessorTestCases(unittest.TestCase):
         Test POST /receipts/process endpoint with invalid payload (invalid item).
         '''
         
-        invalid_items_payload = {
+        invalid_payload = {
             "retailer": "", 
             "purchaseDate": "2022-01-01", 
             "purchaseTime": "13:01", 
-            "items": [{"no_shortdescription": "Mountain Dew 12PK", "price": "6.49"}],
-            "total": "1.2.00"
+            "items": [{"price": "6.49"}],
+            "total": "1.2"
         }
-        response = self.client().post('/receipts/process', data=json.dumps(invalid_items_payload), content_type='application/json')
+        response = self.client().post('/receipts/process', data=json.dumps(invalid_payload), content_type='application/json')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.get_json().get('error', None), "The receipt is invalid")
     

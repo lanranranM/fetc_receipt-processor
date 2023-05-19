@@ -26,33 +26,64 @@ def calculate_points(receipt):
         int: Points earned
     '''
     points = 0
-    retailer = receipt.get("retailer")
-    total = receipt.get("total")
-    items = receipt.get("items")
-    purchase_date = datetime.strptime(receipt.get("purchaseDate"), "%Y-%m-%d") # "2022-01-01"
-    purchase_time = datetime.strptime(receipt.get("purchaseTime"), "%H:%M") # "13:01"
+    rules_num = 7
+    for i in range(1, rules_num+1):
+        points += globals()[f"calculate_points_rule{i}"](receipt)
+    return points
 
+def calculate_points_rule1(receipt):
+    points = 0
+    retailer = receipt.get("retailer")
     points += sum(c.isalnum() for c in retailer)
     app.logger.debug("rule1 %d", points)
-    total = float(total)  
+    return points
+
+def calculate_points_rule2(receipt):
+    points = 0
+    total = float(receipt.get("total"))  
     if total.is_integer():
         points += 50
-        app.logger.debug("rule2 %d", points)
+    app.logger.debug("rule2 %d", points)
+    return points
+    
+def calculate_points_rule3(receipt):
+    points = 0
+    total = float(receipt.get("total"))  
     if total % 0.25 == 0:
         points += 25
-        app.logger.debug("rule3 %d", points)
+    app.logger.debug("rule3 %d", points)
+    return points
+
+def calculate_points_rule4(receipt):
+    points = 0
+    items = receipt.get("items")
     points += (len(items) // 2) * 5 
     app.logger.debug("rule4 %d", points)
+    return points
+
+def calculate_points_rule5(receipt):
+    points = 0
+    items = receipt.get("items")
     for item in items:
         if len(item.get("shortDescription").strip()) % 3 == 0:
             points += math.ceil(float(item.get("price")) * 0.2)
-            app.logger.debug("rule5 %d", points)
+    app.logger.debug("rule5 %d", points)
+    return points
+
+def calculate_points_rule6(receipt):
+    points = 0
+    purchase_date = datetime.strptime(receipt.get("purchaseDate"), "%Y-%m-%d") # "2022-01-01"
     if purchase_date.day % 2 == 1:
         points += 6
-        app.logger.debug("rule6 %d", points)
+    app.logger.debug("rule6 %d", points)
+    return points
+
+def calculate_points_rule7(receipt):
+    points = 0
+    purchase_time = datetime.strptime(receipt.get("purchaseTime"), "%H:%M") # "13:01"
     if 14 <= purchase_time.hour <= 16: # 2pm - 4pm
         points += 10
-        app.logger.debug("rule7 %d", points)
+    app.logger.debug("rule7 %d", points)
     return points
 
 def validate(request):
@@ -67,18 +98,35 @@ def validate(request):
     Returns:
         bool: True if the request is valid, False otherwise
     '''
+    validated = False
+    rules_num = 4
+    for i in range(1, rules_num+1):
+        validated = globals()[f"validate_rule{i}"](request)
+        if not validated:
+            return False
+    return True
+
+def validate_rule1(request):
     #validate json
     try:
        receipt = request.json 
     except Exception as e:
         app.logger.debug("request %s not valid json", request, e)
         return False
+    return True
+
+def validate_rule2(request):
     # validate required properties
+    receipt = request.json
     for field in ["retailer", "purchaseDate", "purchaseTime", "items", "total"]:
         if field not in receipt:
             app.logger.debug("field %s not in receipt", field)
             return False
-    # validate the property' types
+    return True
+
+def validate_rule3(request):
+    # validate the property' types except items
+    receipt = request.json
     if type(receipt["retailer"]) != str or not bool(re.match("^\\S+$", receipt["retailer"])):
         app.logger.debug("retailer %s not valid", receipt["retailer"])
         return False
@@ -103,7 +151,11 @@ def validate(request):
     if type(receipt["total"]) != str or not bool(re.match("^\\d+\\.\\d{2}$", receipt["total"])):
         app.logger.debug("total %s not valid", receipt["total"])
         return False
+    return True
+
+def validate_rule4(request):
     # validate item
+    receipt = request.json
     items = receipt["items"]
     if len(items) < 1:
         app.logger.debug("items %s <1", items)
@@ -133,7 +185,6 @@ def validate(request):
             app.logger.debug("items %s not valid", items, e)
             return False
     return True
-            
 
 @app.route('/receipts/process', methods=['POST'])
 def process_receipt():

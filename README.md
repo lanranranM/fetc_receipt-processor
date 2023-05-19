@@ -12,9 +12,14 @@ docker build -t receipt-processor .
 ```
 docker run -p 5000:5000 receipt-processor
 ```
-3. Since there is not frontend implementation, you can test the API via Postman or curl command line tool. Please refer to the testing section below.
+to run the image in testing mode (unit testers)
+```
+docker run -e APP_MODE=test receipt-processor
+```  
+3. Since there is not frontend implementation, you can manually test the API via Postman or curl command line tool. Please refer to the testing section below.
+4. To stop the running container: press ctrl+C or ```docker stop <container_id>```
 
-## Testing  
+## Manually Testing  
 For simplicity, I use ```curl``` command line tool to test the API.   
 Keep the container with webserver running, and in a new terminal session: 
 - Test Post  
@@ -105,3 +110,4 @@ curl http://localhost:5000/receipts/{invalid-id}/points >> get_output.txt
 ## What's next?
 - Frontend implementation
 - Store the data in the dataset for future sake. The data is stored in memory now. 
+- how to handle existing receipt? now we handle each post request as a new receipt. 
